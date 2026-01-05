@@ -54,7 +54,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_out" {
   period              = "30"
   statistic           = "Average"
   dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.asg_1.name 
+    AutoScalingGroupName = aws_autoscaling_group.asg_1.name
   }
 }
 
