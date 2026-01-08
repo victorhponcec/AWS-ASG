@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'hashicorp/terraform:1.10.2'
+      image 'hashicorp/terraform:1.14'
       args '-u root'
     }
   }
