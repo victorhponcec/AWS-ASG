@@ -1,34 +1,51 @@
 pipeline {
-  agent {
-    docker {
-      image 'hashicorp/terraform:1.14'
-      args '-u root'
-    }
-  }
+  agent any
 
   environment {
-    TF_IN_AUTOMATION = 'true'
+    WORKDIR = "/workspace/my-terraform-project"
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        sh '''
+          mkdir -p $WORKDIR
+          git clone https://github.com/you/terraform-repo.git $WORKDIR
+        '''
+      }
+    }
+
     stage('Terraform Init') {
       steps {
-        sh 'terraform init -lockfile=readonly'
+        sh '''
+          docker exec terraform sh -c "
+            cd $WORKDIR &&
+            terraform init
+          "
+        '''
       }
     }
 
     stage('Terraform Plan') {
       steps {
-        sh 'terraform plan'
+        sh '''
+          docker exec terraform sh -c "
+            cd $WORKDIR &&
+            terraform plan
+          "
+        '''
       }
     }
 
     stage('Terraform Apply') {
-      when {
-        branch 'main'
-      }
+      when { branch 'main' }
       steps {
-        sh 'terraform apply -auto-approve'
+        sh '''
+          docker exec terraform sh -c "
+            cd $WORKDIR &&
+            terraform apply -auto-approve
+          "
+        '''
       }
     }
   }
