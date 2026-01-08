@@ -5,10 +5,10 @@ resource "aws_launch_template" "template1" {
   #vpc_security_group_ids = [aws_security_group.web.id] #conficts with: network_interfaces.security_group
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.web.id] #When a network interface is provided, the security groups must be a part of it
+    security_groups             = [aws_security_group.web_asg.id] #When a network interface is provided, the security groups must be a part of it
   }
   iam_instance_profile {
-    name = aws_iam_instance_profile.ssm_profile.name
+    name = aws_iam_instance_profile.ssm_profile_asg.name
   }
   user_data = filebase64("user_data.sh")
 }
