@@ -2,15 +2,17 @@ pipeline {
   agent any
 
   environment {
-    WORKDIR = "/workspace/my-terraform-project"
+    TF_WORKDIR = "/workspace/${JOB_NAME}"
   }
 
   stages {
-    stage('Checkout') {
+
+    stage('Verify Workspace') {
       steps {
         sh '''
-          mkdir -p $WORKDIR
-          git clone https://github.com/you/terraform-repo.git $WORKDIR
+          echo "Jenkins workspace:"
+          pwd
+          ls -la
         '''
       }
     }
@@ -19,7 +21,7 @@ pipeline {
       steps {
         sh '''
           docker exec terraform sh -c "
-            cd $WORKDIR &&
+            cd ${TF_WORKDIR} &&
             terraform init
           "
         '''
@@ -30,7 +32,7 @@ pipeline {
       steps {
         sh '''
           docker exec terraform sh -c "
-            cd $WORKDIR &&
+            cd ${TF_WORKDIR} &&
             terraform plan
           "
         '''
@@ -42,7 +44,7 @@ pipeline {
       steps {
         sh '''
           docker exec terraform sh -c "
-            cd $WORKDIR &&
+            cd ${TF_WORKDIR} &&
             terraform apply -auto-approve
           "
         '''
