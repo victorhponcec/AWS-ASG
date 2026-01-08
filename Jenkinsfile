@@ -1,27 +1,19 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'hashicorp/terraform:1.10.2'
+      args '-u root'
+    }
+  }
 
   environment {
-    AWS_DEFAULT_REGION = "eu-west-1"
+    TF_IN_AUTOMATION = 'true'
   }
 
   stages {
-
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Terraform Init') {
       steps {
-        sh 'terraform init -input=false'
-      }
-    }
-
-    stage('Terraform Validate') {
-      steps {
-        sh 'terraform validate'
+        sh 'terraform init -lockfile=readonly'
       }
     }
 
@@ -32,6 +24,9 @@ pipeline {
     }
 
     stage('Terraform Apply') {
+      when {
+        branch 'main'
+      }
       steps {
         sh 'terraform apply -auto-approve'
       }
