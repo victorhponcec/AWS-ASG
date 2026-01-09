@@ -1,19 +1,21 @@
 pipeline {
   agent any
 
-  parameters {
-    booleanParam(
-      name: 'APPLY',
-      defaultValue: false,
-      description: 'Run terraform apply'
-    )
-  }
-
   environment {
     TF_WORKDIR = "/workspace/${JOB_NAME}"
   }
 
   stages {
+
+    stage('Verify Workspace') {
+      steps {
+        sh '''
+          echo "Jenkins workspace:"
+          pwd
+          ls -la
+        '''
+      }
+    }
 
     stage('Terraform Init') {
       steps {
@@ -38,9 +40,7 @@ pipeline {
     }
 
     stage('Terraform Apply') {
-      when {
-        expression { params.APPLY }
-      }
+      when { branch 'main' }
       steps {
         sh '''
           docker exec terraform sh -c "
