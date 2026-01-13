@@ -60,9 +60,9 @@ environment {
 stage('Summarize Checkov Results') {
   steps {
     sh '''
-      docker exec terraform sh -c "cd ${TF_WORKDIR} && cp checkov.json /tmp/checkov.json"
+      docker exec terraform sh -c "cd ${TF_WORKDIR} || exit 1"
 
-      cat <<'EOF' | jq -r - /tmp/checkov.json > comment.txt
+      cat <<'EOF' | jq -r - checkov.json > comment.txt
 .summary as $s |
 "🔐 Checkov Security Scan Results\n\n" +
 "Critical: \($s.critical)\n" +
@@ -80,6 +80,7 @@ EOF
     '''
   }
 }
+
 
     stage('Comment Results on Main Commit') {
       when {
