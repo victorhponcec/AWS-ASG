@@ -87,7 +87,7 @@ EOF
 
 stage('Comment Results on Main Commit') {
   steps {
-    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+    withCredentials([string(credentialsId: 'jenkins-checkov', variable: 'GITHUB_TOKEN')]) {
       sh '''
         set -e
 
