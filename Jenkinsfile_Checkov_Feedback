@@ -81,7 +81,6 @@ EOF
   }
 }
 
-
     stage('Comment Results on Main Commit') {
       when {
         branch 'main'
