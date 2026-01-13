@@ -91,10 +91,13 @@ stage('Comment Results on Main Commit') {
       sh '''
         set -e
 
-        COMMENT=$(docker exec terraform sh -c '
+        COMMENT=$(docker exec terraform sh -c "
           cd ${TF_WORKDIR} &&
           cat comment.txt | jq -Rs .
-        ')
+        ")
+
+        echo "Repo: ${GITHUB_REPOSITORY}"
+        echo "Commit: ${GIT_COMMIT}"
 
         curl -f -X POST \
           -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -105,7 +108,6 @@ stage('Comment Results on Main Commit') {
     }
   }
 }
-
 
 
     stage('Terraform Apply') {
