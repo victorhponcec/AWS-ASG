@@ -63,25 +63,28 @@ stage('Summarize Checkov Results') {
       docker exec terraform sh -c "
         cd ${TF_WORKDIR} || exit 1
 
-        jq -r '
-          .summary as $s |
-          \"🔐 Checkov Security Scan Results\\n\\n\" +
-          \"Critical: \\($s.critical)\\n\" +
-          \"High: \\($s.high)\\n\" +
-          \"Medium: \\($s.medium)\\n\\n\" +
-          \"Top issues:\\n\" +
-          (
-            .results.failed_checks
-            | sort_by(.severity)
-            | .[:5]
-            | map(\"- \\(.check_id): \\(.check_name)\")
-            | join(\"\\n\")
-          )
-        ' checkov.json > comment.txt
+        cat > summary.jq <<'EOF'
+.summary as $s |
+\"🔐 Checkov Security Scan Results\\n\\n\" +
+\"Critical: \\($s.critical)\\n\" +
+\"High: \\($s.high)\\n\" +
+\"Medium: \\($s.medium)\\n\\n\" +
+\"Top issues:\\n\" +
+(
+  .results.failed_checks
+  | sort_by(.severity)
+  | .[:5]
+  | map(\"- \\(.check_id): \\(.check_name)\")
+  | join(\"\\n\")
+)
+EOF
+
+        jq -r -f summary.jq checkov.json > comment.txt
       "
     '''
   }
 }
+
 
 
     stage('Comment Results on Main Commit') {
