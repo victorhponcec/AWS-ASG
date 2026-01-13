@@ -60,30 +60,35 @@ environment {
 stage('Summarize Checkov Results') {
   steps {
     sh '''
-      docker exec terraform sh -c "
+      # Create jq script inside the container
+      docker exec terraform sh -c '
         cd ${TF_WORKDIR} || exit 1
 
-        cat > summary.jq <<'EOF'
-.summary as $s |
-\"🔐 Checkov Security Scan Results\\n\\n\" +
-\"Critical: \\($s.critical)\\n\" +
-\"High: \\($s.high)\\n\" +
-\"Medium: \\($s.medium)\\n\\n\" +
-\"Top issues:\\n\" +
-(
-  .results.failed_checks
-  | sort_by(.severity)
-  | .[:5]
-  | map(\"- \\(.check_id): \\(.check_name)\")
-  | join(\"\\n\")
-)
-EOF
+        printf "%s\n" \
+".summary as \\$s |" \
+"\\"🔐 Checkov Security Scan Results\\\\n\\\\n\\" +" \
+"\\"Critical: \\\\(\\$s.critical)\\\\n\\" +" \
+"\\"High: \\\\(\\$s.high)\\\\n\\" +" \
+"\\"Medium: \\\\(\\$s.medium)\\\\n\\\\n\\" +" \
+"\\"Top issues:\\\\n\\" +" \
+"(" \
+"  .results.failed_checks" \
+"  | sort_by(.severity)" \
+"  | .[:5]" \
+"  | map(\\"- \\\\(.check_id): \\\\(.check_name)\\")" \
+"  | join(\\"\\\\n\\")" \
+")" > summary.jq
+      '
 
+      # Run jq using the file
+      docker exec terraform sh -c '
+        cd ${TF_WORKDIR} || exit 1
         jq -r -f summary.jq checkov.json > comment.txt
-      "
+      '
     '''
   }
 }
+
 
 
 
