@@ -59,30 +59,32 @@ environment {
 
 stage('Summarize Checkov Results') {
   steps {
+
+    // Copy file out of container
     sh '''
       docker exec terraform sh -c "cd ${TF_WORKDIR} && cp checkov.json /tmp/checkov.json"
     '''
 
+    // Run jq safely (Groovy never sees jq syntax)
     sh '''
-      jq -r '
-        .summary as $s |
-        "🔐 Checkov Security Scan Results\n\n" +
-        "Critical: \($s.critical)\n" +
-        "High: \($s.high)\n" +
-        "Medium: \($s.medium)\n\n" +
-        "Top issues:\n" +
-        (
-          .results.failed_checks
-          | sort_by(.severity)
-          | .[:5]
-          | map("- \(.check_id): \(.check_name)")
-          | join("\n")
-        )
-      ' /tmp/checkov.json > comment.txt
+      cat <<'EOF' | jq -r - /tmp/checkov.json > comment.txt
+.summary as $s |
+"🔐 Checkov Security Scan Results\n\n" +
+"Critical: \($s.critical)\n" +
+"High: \($s.high)\n" +
+"Medium: \($s.medium)\n\n" +
+"Top issues:\n" +
+(
+  .results.failed_checks
+  | sort_by(.severity)
+  | .[:5]
+  | map("- \(.check_id): \(.check_name)")
+  | join("\n")
+)
+EOF
     '''
   }
 }
-
 
     stage('Comment Results on Main Commit') {
       when {
