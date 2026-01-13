@@ -11,9 +11,7 @@ pipeline {
 
 environment {
   TF_WORKDIR = "/workspace/${JOB_NAME}"
-  GITHUB_REPOSITORY = "${env.GIT_URL
-    .replaceFirst(/^.*github.com[/:]/, '')
-    .replaceFirst(/\\.git$/, '')}"
+  GITHUB_REPOSITORY = "victorhponcec/AWS-ASG"
 }
 
 
