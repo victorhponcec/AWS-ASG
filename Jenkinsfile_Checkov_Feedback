@@ -11,11 +11,11 @@ pipeline {
 
 environment {
   TF_WORKDIR = "/workspace/${JOB_NAME}"
-  GITHUB_REPOSITORY = sh(
-    script: "git config --get remote.origin.url | sed -E 's#.*github.com[:/](.+)/(.+)(\\.git)?#\\1/\\2#'",
-    returnStdout: true
-  ).trim()
+  GITHUB_REPOSITORY = "${env.GIT_URL
+    .replaceFirst(/^.*github.com[/:]/, '')
+    .replaceFirst(/\\.git$/, '')}"
 }
+
 
   stages {
 
