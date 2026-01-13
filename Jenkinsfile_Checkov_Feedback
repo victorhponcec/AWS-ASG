@@ -59,14 +59,9 @@ environment {
 
 stage('Summarize Checkov Results') {
   steps {
-
-    // Copy file out of container
     sh '''
       docker exec terraform sh -c "cd ${TF_WORKDIR} && cp checkov.json /tmp/checkov.json"
-    '''
 
-    // Run jq safely (Groovy never sees jq syntax)
-    sh '''
       cat <<'EOF' | jq -r - /tmp/checkov.json > comment.txt
 .summary as $s |
 "🔐 Checkov Security Scan Results\n\n" +
@@ -85,6 +80,7 @@ EOF
     '''
   }
 }
+
 
     stage('Comment Results on Main Commit') {
       when {
