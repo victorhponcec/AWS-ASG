@@ -46,10 +46,10 @@ stage('Terrascan Scan (Plan)') {
         terraform show -json tfplan > plan.json &&
 
         # Fix Terraform plan format_version for Terrascan
-        sed -i 's/\"format_version\":\"1\\.[0-9]\"/\"format_version\":\"0.2\"/' plan.json &&
+        sed -i 's/\\\"format_version\\\":\\\"1\\.[0-9]\\\"/\\\"format_version\\\":\\\"0.2\\\"/' plan.json &&
 
-        # Verify (must print 0.2)
-        grep \"format_version\" plan.json &&
+        # Verify downgrade (MUST show 0.2)
+        grep format_version plan.json &&
 
         terrascan scan \
           -i tfplan \
@@ -58,6 +58,7 @@ stage('Terrascan Scan (Plan)') {
     '''
   }
 }
+
 
     stage('Terraform Apply') {
       when {
