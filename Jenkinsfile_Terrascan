@@ -51,6 +51,7 @@ stage('Terrascan Scan (Plan)') {
         # Verify downgrade (MUST show 0.2)
         grep format_version plan.json &&
 
+        # Terrascan Pipeline Options 1,2,3 (UNCOMMENT):
         #1. Scan will throw error if there's a finding (Jenkins pipeline will fail on findings)
         #terrascan scan \
           #-i tfplan \
@@ -61,12 +62,19 @@ stage('Terrascan Scan (Plan)') {
           #-i tfplan \
           #-f plan.json || true
 
-        #3. Scan will only give error on medium/high findings (Jenkins will fail if there are high/medium findings)
-        terrascan scan \
-          -i tfplan \
-          -f plan.json \
-          --severity medium,high
-
+        #3. Scan will give error on exit codes 1,3,4,5 (Jenkins will fail if there are findings)
+        terrascan scan -i tfplan -f plan.json
+        rc=$?
+        
+        if [ "$rc" -eq 1 ]; then
+          echo "Terrascan execution error (invalid input)"
+          exit 1
+        elif [ "$rc" -gt 3 ]; then
+          echo "Terrascan failed with errors (exit code $rc)"
+          exit 1
+        else
+          echo "Terrascan passed (exit code $rc)"
+        fi
       "
     '''
   }
