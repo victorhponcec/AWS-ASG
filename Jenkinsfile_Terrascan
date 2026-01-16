@@ -40,7 +40,7 @@ pipeline {
 stage('Terrascan Scan (Plan)') {
   steps {
     sh '''
-      docker exec -t terraform sh <<'EOF'
+      docker exec -it terraform sh <<'EOF'
         cd ${TF_WORKDIR}
 
         terraform show -json tfplan > plan.json
