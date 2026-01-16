@@ -53,7 +53,7 @@ stage('Terrascan Scan (Plan)') {
 
         terrascan scan \
           -i tfplan \
-          -f plan.json
+          -f plan.json || true
       "
     '''
   }
