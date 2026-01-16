@@ -40,32 +40,39 @@ pipeline {
 stage('Terrascan Scan (Plan)') {
   steps {
     sh '''
-      docker exec terraform sh -c "
-        cd ${TF_WORKDIR} &&
+      docker exec terraform sh <<'EOF'
+        cd ${TF_WORKDIR}
 
-        terraform show -json tfplan > plan.json &&
+        terraform show -json tfplan > plan.json
 
         # Fix Terraform plan format_version for Terrascan
-        sed -i 's/\\\"format_version\\\":\\\"1\\.[0-9]\\\"/\\\"format_version\\\":\\\"0.2\\\"/' plan.json &&
+        sed -i 's/"format_version":"1.[0-9]"/"format_version":"0.2"/' plan.json
 
         # Verify downgrade (MUST show 0.2)
-        grep format_version plan.json &&
+        grep format_version plan.json
 
         # Terrascan Pipeline Options 1,2,3 (UNCOMMENT):
         #1. Scan will throw error if there's a finding (Jenkins pipeline will fail on findings)
         #terrascan scan \
-          #-i tfplan \
-          #-f plan.json
+        #  -i tfplan \
+        #  -f plan.json
 
         #2. Scan will not throw an error even if there are findings (Jenkins will success even on findings)
         #terrascan scan \
-          #-i tfplan \
-          #-f plan.json || true
+        #  -i tfplan \
+        #  -f plan.json || true
 
-        #3. Scan will give error on exit codes 1,3,4,5 (Jenkins will fail if there are findings)
+        #3. Scan will give error on exit codes 1,4,5 (Jenkins will fail if there are findings)
+        #| Exit code | Meaning             | Jenkins |
+        #| --------- | ------------------- | ------- |
+        #|   0       | clean               | pass    |
+        #|   3       | violations only     | pass    |
+        #|   4       | errors              | fail    |
+        #|   5       | errors + violations | fail    |
+        #|   1       | invalid input       | fail    |
         terrascan scan -i tfplan -f plan.json
         rc=$?
-        
+
         if [ "$rc" -eq 1 ]; then
           echo "Terrascan execution error (invalid input)"
           exit 1
@@ -75,10 +82,11 @@ stage('Terrascan Scan (Plan)') {
         else
           echo "Terrascan passed (exit code $rc)"
         fi
-      "
+      EOF
     '''
   }
 }
+
 
 
     stage('Terraform Apply') {
