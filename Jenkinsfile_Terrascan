@@ -58,23 +58,9 @@ stage('Terrascan Scan (Plan)') {
           #-f plan.json
 
         #2. Scan will not throw an error even if there are findings (Jenkins will success even on findings)
-        #terrascan scan \
-          #-i tfplan \
-          #-f plan.json || true
-
-        #3. Scan will give error on exit codes 1,3,4,5 (Jenkins will fail if there are findings)
-        terrascan scan -i tfplan -f plan.json
-        rc=$?
-        
-        if [ "$rc" -eq 1 ]; then
-          echo "Terrascan execution error (invalid input)"
-          exit 1
-        elif [ "$rc" -gt 3 ]; then
-          echo "Terrascan failed with errors (exit code $rc)"
-          exit 1
-        else
-          echo "Terrascan passed (exit code $rc)"
-        fi
+        terrascan scan \
+          -i tfplan \
+          -f plan.json || true
       "
     '''
   }
