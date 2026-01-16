@@ -40,7 +40,7 @@ pipeline {
 stage('Terrascan Scan (Plan)') {
   steps {
     sh '''
-      docker exec terraform sh <<'EOF'
+      docker exec -t terraform sh <<'EOF'
         cd ${TF_WORKDIR}
 
         terraform show -json tfplan > plan.json
@@ -71,7 +71,7 @@ stage('Terrascan Scan (Plan)') {
         #|   5       | errors + violations | fail    |
         #|   1       | invalid input       | fail    |
         terrascan scan -i tfplan -f plan.json --output human | tee terrascan.out
-        rc=${PIPESTATUS[0]}
+        rc=$?
 
         if [ "$rc" -eq 1 ]; then
           echo "Terrascan execution error (invalid input)"
