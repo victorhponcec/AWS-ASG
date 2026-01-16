@@ -43,16 +43,14 @@ stage('Terrascan Scan (Plan)') {
       docker exec terraform sh -c "
         cd ${TF_WORKDIR} &&
 
-        # Generate plan JSON
         terraform show -json tfplan > plan.json &&
 
-        # Downgrade plan format_version for Terrascan compatibility
+        # Fix Terraform plan format_version for Terrascan
         sed -i 's/\"format_version\":\"1\\.[0-9]\"/\"format_version\":\"0.2\"/' plan.json &&
 
-        # Verify downgrade (debug-safe)
-        grep format_version plan.json &&
+        # Verify (must print 0.2)
+        grep \"format_version\" plan.json &&
 
-        # Scan Terraform plan
         terrascan scan \
           -i tfplan \
           -f plan.json
@@ -60,7 +58,6 @@ stage('Terrascan Scan (Plan)') {
     '''
   }
 }
-
 
     stage('Terraform Apply') {
       when {
